@@ -22,6 +22,23 @@ export function TopBar({ activeView, onViewChange }: TopBarProps) {
   
   return (
     <header className="w-full p-6 flex items-center justify-between bg-transparent">
+
+      <div className="flex items-center gap-1 select-none group cursor-default">
+        <h1 className="text-4xl tracking-tighter">
+          {/* Parte "Or" - Mais grossa e imponente */}
+          <span className="font-black text-white drop-shadow-md">
+            Or
+          </span>
+          {/* Parte "Bee" - Mais fina e elegante */}
+          <span className="font-light text-white/90 italic tracking-tight">
+            Bee
+          </span>
+        </h1>
+        
+        {/* Um detalhe sutil: um pontinho verde da Orbee */}
+        <div className="w-2 h-2 bg-[#cff178] rounded-full mt-4 animate-pulse shadow-[0_0_10px_#4ADE80]" />
+      </div>
+
       <div className="flex items-center gap-12">
         <div className="flex flex-col">
         <h1 className="text-xl font-black text-white tracking-tight leading-none mb-1">

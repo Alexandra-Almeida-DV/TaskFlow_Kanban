@@ -1,125 +1,169 @@
-import { 
-  Plus, 
-  Calendar as CalendarIcon, 
-  CheckCircle2, 
-  Clock, 
-  TrendingUp, 
-  Zap,
-  MoreHorizontal
-} from 'lucide-react';
-import { Calendar } from '../Calendar'
+import { useState, useEffect, useMemo } from 'react';
+import { PlusCircle, Timer, Zap, Quote } from 'lucide-react';
+import { Calendar } from '../Calendar';
+import { ViewType } from '../../types/View';
+import { getDailyQuote } from '../../data/quotes';
+import api from '../../../../backend/app/scr/services/api'; 
 
-export function HomeView() {
-  return (
-    <div className="grid grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
-      {/* --- COLUNA ESQUERDA (CALENDÁRIO PRINCIPAL) --- */}
-      <div className="col-span-12 lg:col-span-8 space-y-8">
-        
-        {/* CARD DO CALENDÁRIO MAIOR */}
-        <div className="bg-white rounded-[40px] p-8 shadow-orbee border border-white/20 min-h-[600px] flex flex-col">
-          <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary-300/30 rounded-2xl text-primary-700">
-                <CalendarIcon size={24} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-primary-700 tracking-tight">
-                  
-                </h2>
-              </div>
-            </div>
-            
-            <button className="flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-2xl text-sm font-black transition-all shadow-lg shadow-accent-500/30 active:scale-95">
-              <Plus size={20} /> Novo Evento
-            </button>
-          </div>
-          
-          {/* AREA ONDE ENTRARÁ O COMPONENTE DE CALENDÁRIO */}
-          <div className="flex-1 w-full bg-gray-100/50 rounded-[32px] border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 group cursor-pointer hover:bg-gray-100 transition-colors">
-            <div className="text-center">
-              <Calendar />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* --- COLUNA DIREITA (WIDGETS & PRODUTIVIDADE) --- */}
-      <div className="col-span-12 lg:col-span-4 flex flex-col gap-8">
-        
-        {/* 1. WIDGET: FOCO DA SEMANA (Primary Dark) */}
-        <div className="bg-primary-700 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden group">
-          <div className="relative z-10">
-            <div className="flex justify-between items-start mb-6">
-              <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
-                <TrendingUp size={20} className="text-accent-500" />
-              </div>
-              <button className="text-white/30 hover:text-white transition-colors">
-                <MoreHorizontal size={20} />
-              </button>
-            </div>
-            <p className="text-white/50 text-xs font-bold uppercase tracking-[0.2em] mb-2">Total focado hoje</p>
-            <h4 className="text-4xl font-black mb-1">3457 <span className="text-lg font-medium opacity-50">horas</span></h4>
-            <div className="flex items-center gap-2 mt-4">
-              <span className="bg-accent-500 text-[10px] px-2 py-0.5 rounded-full font-black text-white">+12%</span>
-              <p className="text-white/40 text-[10px] font-bold">em relação a ontem</p>
-            </div>
-          </div>
-          {/* Decoração de fundo - A "Abelha" ou Logo Orbee sutil */}
-          <Zap className="absolute -right-6 -bottom-6 text-white/5 w-40 h-40 -rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
-        </div>
-
-        {/* 2. WIDGET: TAREFAS DE HOJE (White Card) */}
-        <div className="bg-white rounded-[40px] p-8 shadow-orbee border border-white/20 flex-1">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 size={22} className="text-accent-500" />
-              <h3 className="font-black text-primary-700 tracking-tight">Hoje</h3>
-            </div>
-            <span className="text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full text-gray-500 uppercase tracking-tighter">03 Tarefas</span>
-          </div>
-          
-          <div className="space-y-4">
-            <TaskItem title="Revisão Backend FastAPI" time="09:00" checked />
-            <TaskItem title="Reunião Design Orbee" time="14:30" />
-            <TaskItem title="Finalizar Sidebar" time="17:00" />
-            <TaskItem title="Sync com o time" time="18:30" />
-          </div>
-
-          <button className="w-full mt-8 py-4 border-2 border-dashed border-primary-300 rounded-3xl text-primary-500 text-xs font-black uppercase tracking-widest hover:bg-primary-300/10 hover:border-primary-500 transition-all">
-            + Adicionar Tarefa
-          </button>
-        </div>
-
-      </div>
-    </div>
-  );
+interface Task {
+  id: number;
+  title: string;
+  date: string;
+  time: string;
+  category: string;
+  completed: boolean;
 }
 
-// --- SUB-COMPONENTE PARA ITENS DE TAREFA ---
-function TaskItem({ title, time, checked = false }: { title: string, time: string, checked?: boolean }) {
+interface HomeViewProps {
+  onViewChange: (view: ViewType, date?: Date) => void;
+  tasks?: Task[]; // Tornamos opcional pois agora buscamos do banco
+}
+
+export function HomeView({ onViewChange }: HomeViewProps) {
+  const hojeStr = new Date().toISOString().split('T')[0];
+  
+  // ESTADOS
+  const [seconds, setSeconds] = useState(25 * 60);
+  const [isActive, setIsActive] = useState(false);
+  const [listaTarefas, setListaTarefas] = useState<Task[]>([]);
+
+  // LÓGICA DA FRASE
+  const fraseDoDia = useMemo(() => getDailyQuote(), []);
+
+  // BUSCA DE DADOS NO BACKEND (PERSISTÊNCIA)
+  useEffect(() => {
+    const carregarDados = async () => {
+      try {
+        const response = await api.get('/tasks/');
+        setListaTarefas(response.data); 
+      } catch (error) {
+        console.error("Erro ao buscar dados do banco:", error);
+      }
+    };
+    carregarDados();
+  }, []);
+
+  // TIMER POMODORO
+  useEffect(() => {
+    let interval: number | undefined;
+    if (isActive) {
+      interval = window.setInterval(() => {
+        setSeconds((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            setIsActive(false);
+            alert("Tempo de foco encerrado! 🐝");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => { if (interval) clearInterval(interval); };
+  }, [isActive]);
+
+  // FORMATADORES E FILTROS
+  const formatTime = (s: number) => {
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const tarefasDeHoje = listaTarefas.filter((t) => t.date === hojeStr);
+  const total = tarefasDeHoje.length;
+  const concluidas = tarefasDeHoje.filter((t) => t.completed).length;
+  const pendentes = total - concluidas;
+  const proximoCompromisso = tarefasDeHoje
+    .filter((t) => !t.completed)
+    .sort((a, b) => a.time.localeCompare(b.time))[0];
+
   return (
-    <div className={`flex items-center justify-between p-5 rounded-[24px] border transition-all duration-300 cursor-pointer group ${
-      checked 
-        ? 'bg-gray-50/50 border-transparent opacity-50' 
-        : 'bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-primary-300'
-    }`}>
-      <div className="flex items-center gap-4">
-        <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${
-          checked 
-            ? 'bg-primary-500 border-primary-500' 
-            : 'border-gray-200 bg-white group-hover:border-accent-500'
-        }`}>
-          {checked && <CheckCircle2 size={14} className="text-white" />}
-        </div>
-        <div className="flex flex-col">
-          <span className={`text-sm font-bold ${checked ? 'line-through text-gray-400 font-medium' : 'text-primary-700'}`}>
-            {title}
-          </span>
-          <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400">
-            <Clock size={10} />
-            <span>{time}</span>
+    <div className="grid grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 p-4 items-stretch">
+      
+      {/* COLUNA ESQUERDA: Frase + Resumo */}
+      <div className="col-span-12 lg:col-span-5 flex flex-col gap-6">
+        
+        {/* CARD FRASE MOTIVACIONAL */}
+        <div className="flex-1 bg-white/5 backdrop-blur-sm rounded-[40px] p-8 border border-white/5 shadow-xl flex flex-col justify-center relative overflow-hidden group min-h-[200px]">
+          <Quote size={80} className="absolute -right-4 -top-4 text-white/5 rotate-12 group-hover:text-[#cff178]/5 transition-all duration-500" />
+          
+          <div className="relative z-10 space-y-3">
+            <span className="text-[#cff178] font-black text-[10px] uppercase tracking-[0.2em]">Inspiração OrBee</span>
+            <p className="text-white text-xl font-medium leading-relaxed italic tracking-wide">
+              "{fraseDoDia.texto}"
+            </p>
+            <p className="text-white/40 text-sm font-bold tracking-tight text-right">
+              — {fraseDoDia.autor}
+            </p>
           </div>
+        </div>
+
+        {/* CARD RESUMO INTELIGENTE */}
+        <div className="flex-[1.5] bg-white/10 backdrop-blur-md rounded-[40px] p-8 border border-white/10 shadow-2xl flex flex-col justify-between gap-6">
+          <div>
+            <h3 className="text-white/60 font-bold text-xs uppercase tracking-widest mb-1">Resumo Inteligente</h3>
+            <h4 className="text-white text-3xl font-black tracking-tight">Sua OrBee hoje</h4>
+          </div>
+
+          {/* Próximo Compromisso */}
+          <div 
+            className="bg-[#cff178]/10 border border-[#cff178]/20 p-6 rounded-[35px] flex items-center justify-between group cursor-pointer hover:bg-[#cff178]/20 transition-all active:scale-95"
+            onClick={() => onViewChange('Daily', new Date())}
+          >
+            <div className="flex flex-col gap-1">
+              <span className="text-[#cff178] font-black text-[10px] uppercase tracking-wider flex items-center gap-2">
+                <Zap size={14} /> {proximoCompromisso ? `Próximo às ${proximoCompromisso.time}` : "Sem compromissos"}
+              </span>
+              <h5 className="text-white font-bold text-xl leading-tight">
+                {proximoCompromisso ? proximoCompromisso.title : "Tudo em ordem!"}
+              </h5>
+            </div>
+            <div className="bg-[#cff178] text-[#5D5A88] px-4 py-2 rounded-2xl font-black text-lg shadow-lg">
+              {proximoCompromisso ? proximoCompromisso.time : "--:--"}
+            </div>
+          </div>
+
+          {/* Grid de Pendentes e Status */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white/5 p-5 rounded-[30px] border border-white/5 flex flex-col items-center justify-center">
+              <p className="text-white/40 text-[10px] font-bold uppercase mb-1">Pendentes</p>
+              <p className="text-white text-4xl font-black">{pendentes}</p>
+            </div>
+            <div className="bg-white/5 p-5 rounded-[30px] border border-white/5 flex flex-col items-center justify-center text-center">
+              <p className="text-white/40 text-[10px] font-bold uppercase mb-1">Status do Dia</p>
+              <div className="flex flex-col items-center text-[#cff178]">
+                <span className="text-xl font-black leading-tight">{concluidas} de {total}</span>
+                <span className="text-white/20 text-[10px] font-bold uppercase">concluídas</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Botões Foco e Novo */}
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => setIsActive(!isActive)}
+              className={`p-4 rounded-[25px] flex items-center justify-center gap-3 transition-all active:scale-95 border border-white/10 ${
+                isActive ? 'bg-[#cff178]/20 border-[#cff178]/50' : 'bg-[#5D5A88]'
+              }`}
+            >
+              <Timer size={18} className="text-[#cff178]" />
+              <span className="text-white font-black text-sm">{isActive ? formatTime(seconds) : "Foco"}</span>
+            </button>
+            <button 
+              onClick={() => onViewChange('Daily', new Date())}
+              className="bg-[#cff178] hover:bg-[#bde85d] p-4 rounded-[25px] flex items-center justify-center gap-3 transition-all active:scale-95 text-[#5D5A88]"
+            >
+              <PlusCircle size={18} />
+              <span className="font-black text-sm">Novo</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* COLUNA DIREITA: CALENDÁRIO */}
+      <div className="col-span-12 lg:col-span-7 bg-white/5 backdrop-blur-sm rounded-[45px] p-1 border border-white/10 flex flex-col h-full">
+        <div className="flex-1 p-2">
+          <Calendar onDateClick={(date: Date) => onViewChange('Daily', date)} />
         </div>
       </div>
     </div>

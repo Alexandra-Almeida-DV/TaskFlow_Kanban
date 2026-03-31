@@ -1,6 +1,5 @@
-import { Home, LayoutGrid, Calendar, Settings, LogOut } from 'lucide-react';
-import LogoOrbee from '../assets/Orbee.png';
-import { ViewType } from '../types/View';
+import { Home, Settings, LogOut, StickyNote, FileCog } from 'lucide-react'; 
+import { ViewType } from '../types/View'; 
 
 interface SidebarProps {
   activeView: ViewType;
@@ -9,45 +8,41 @@ interface SidebarProps {
 
 export function SideBar({ activeView, onViewChange }: SidebarProps) {
   return (
-    <aside className="w-24 bg-[#7C7AB8] m-4 rounded-[40px] flex flex-col items-center py-8 shadow-2xl shadow-primary-700/20 h-[calc(100vh-32px)] z-50">
-      
-      {/* LOGO ORBEE */}
-      <div className="mb-12 px-2">
-        <img 
-          src={LogoOrbee} 
-          alt="Orbee Logo" 
-          className="w-20h-auto brightness-0 invert opacity-90"
-        />
-      </div>
+    <aside className="w-24 bg-[#7C7AB8] m-4 rounded-[40px] flex flex-col items-center py-8 shadow-2xl h-[calc(100vh-32px)] z-50">
 
-      {/* NAVEGAÇÃO */}
-      <nav className="flex flex-col gap-6 flex-1">
+      <nav className="flex flex-col gap-6 items-center flex-1 w-full">
+        {/* Home */}
         <SidebarButton 
           icon={<Home size={24} />} 
           active={activeView === 'Home'} 
           onClick={() => onViewChange('Home')}
         />
+        
+        {/* Notas */}
         <SidebarButton 
-          icon={<LayoutGrid size={24} />} 
-          active={activeView === 'Weekly'} 
-          onClick={() => onViewChange('Weekly')}
+          icon={<StickyNote size={24} />} 
+          active={activeView === 'Notas'}
+          onClick={() => onViewChange('Notas')}
         />
+
+        {/* PROJETOS (Substituindo o anterior pelo ícone de gerenciamento) */}
         <SidebarButton 
-          icon={<Calendar size={24} />} 
-          active={activeView === 'Monthly'} 
-          onClick={() => onViewChange('Monthly')}
+          icon={<FileCog size={24} />} // Ou use <FileCog size={24} />
+          active={activeView === 'Project'}
+          onClick={() => onViewChange('Project')}
         />
         
-        <div className="h-[1px] bg-white/10 my-2 mx-4" />
-        
+        <div className="w-8 h-[1px] bg-white/10 my-2" />
+    
+        {/* Configurações */}
         <SidebarButton 
           icon={<Settings size={24} />} 
-          active={false}
-          onClick={() => {}} 
+          active={activeView === 'Configuracoes'}
+          onClick={() => onViewChange('Configuracoes')} 
         />
       </nav>
 
-      {/* SAIR */}
+      {/* Logout */}
       <button className="text-white/40 hover:text-[#FF7A00] transition-colors mt-auto pb-4">
         <LogOut size={24} />
       </button>
@@ -55,13 +50,8 @@ export function SideBar({ activeView, onViewChange }: SidebarProps) {
   );
 }
 
-interface SidebarButtonProps {
-  icon: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-}
-
-function SidebarButton({ icon, active, onClick }: SidebarButtonProps) {
+// Sub-componente SidebarButton (Mantido)
+function SidebarButton({ icon, active, onClick }: { icon: React.ReactNode, active: boolean, onClick: () => void }) {
   return (
     <button 
       onClick={onClick}
