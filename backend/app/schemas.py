@@ -22,6 +22,7 @@ class NoteResponse(NoteBase, TunedBase):
 # --- SCHEMAS DO KANBAN ---
 class TaskBase(BaseModel):
     title: str
+    completed: bool
     description: Optional[str] = None
     priority: Optional[str] = "medium"
     date: Optional[str] = None

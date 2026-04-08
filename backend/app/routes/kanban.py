@@ -51,6 +51,7 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
         description=task.description,
         priority=task.priority,
         date=task.date,
+        completed=False,
         column_id=task.column_id
     )
     db.add(new_task)
@@ -74,6 +75,15 @@ def move_task(task_id: int, new_column_id: int, db: Session = Depends(get_db)):
 def get_all_tasks(db: Session = Depends(get_db)):
     return db.query(models.kanban.TaskModel).all()
 
+@router.delete("/tasks/{task_id}", status_code=204)
+def delete_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+    db.delete(task)
+    db.commit()
+    return None
+
 @router.post("/goals", response_model=schemas.GoalCreate)
 def create_goal(goal: schemas.GoalCreate, db: Session = Depends(get_db)):
     """Cria uma nova meta mensal."""
@@ -89,3 +99,16 @@ def create_goal(goal: schemas.GoalCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_goal)
     return db_goal
+
+@router.patch("/tasks/{task_id}/toggle", response_model=schemas.Task)
+def toggle_task_status(task_id: int, db: Session = Depends(get_db)):
+    """Inverte o status de conclusão da tarefa (concluída/pendente)."""
+    db_task = db.query(models.kanban.TaskModel).filter(models.kanban.TaskModel.id == task_id).first()
+    if not db_task:
+        raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+    
+    db_task.completed = not db_task.completed
+    db.commit()
+    db.refresh(db_task)
+    return db_task    
+

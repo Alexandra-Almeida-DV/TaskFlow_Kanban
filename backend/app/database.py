@@ -1,12 +1,17 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./kanban.db")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+default_path = os.path.join(BASE_DIR, "kanban.db")
+
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{default_path}")
+
+print(f"--- 🐝 CONECTADO EM: {SQLALCHEMY_DATABASE_URL} ---")
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, 
@@ -14,7 +19,6 @@ engine = create_engine(
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
 
 def get_db():

@@ -8,7 +8,7 @@ interface SidebarProps {
 
 export function SideBar({ activeView, onViewChange }: SidebarProps) {
   return (
-    <aside className="w-24 bg-[#7C7AB8] m-4 rounded-[40px] flex flex-col items-center py-8 shadow-2xl h-[calc(100vh-32px)] z-50">
+    <aside className="hidden lg:flex w-24 bg-[#7C7AB8] m-4 rounded-[40px] flex flex-col items-center py-8 shadow-2xl h-[calc(100vh-32px)] z-50">
 
       <nav className="flex flex-col gap-6 items-center flex-1 w-full">
         <SidebarButton 
@@ -24,7 +24,7 @@ export function SideBar({ activeView, onViewChange }: SidebarProps) {
           onClick={() => onViewChange('Notas')}
         />
 
-        {/* PROJETOS (Substituindo o anterior pelo ícone de gerenciamento) */}
+        {/* PROJETOS  */}
         <SidebarButton 
           icon={<FileCog size={24} />} // Ou use <FileCog size={24} />
           active={activeView === 'Project'}
