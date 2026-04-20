@@ -48,7 +48,6 @@ export function SideBar({ activeView, onViewChange }: SidebarProps) {
         />
       </nav>
 
-      {/* Botão de Sair - No rodapé da Sidebar */}
       <div className="mt-auto">
         <button 
           onClick={logout}

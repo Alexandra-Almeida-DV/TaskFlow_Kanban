@@ -1,8 +1,11 @@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale'; 
-import { Search, Bell, UserCircle } from 'lucide-react';
+import { Search, UserCircle } from 'lucide-react';
 import { ViewType } from '../types/View'; 
 import { useAuth } from '../hooks/useAuth'
+import { NotificationBell } from '../components/NotificationBell';
+import { useNotifications } from '../hooks/useNotification';
+
 interface TopBarProps {
   activeView: ViewType;
   onViewChange: (view: ViewType) => void;
@@ -16,6 +19,9 @@ interface TopBarProps {
 export function TopBar({ activeView, onViewChange, isMenuOpen }: TopBarProps) {
   const logoAbelha = new URL('../assets/Logoorbee.png', import.meta.url).href;
   const { user, signed } = useAuth();
+
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(signed);
+
   const saudacaoNome = signed && user 
     ? (user.display_name || user.full_name) 
     : 'Visitante';
@@ -86,10 +92,12 @@ export function TopBar({ activeView, onViewChange, isMenuOpen }: TopBarProps) {
             />
           </div>
 
-          <button className="p-3 bg-white rounded-2xl text-primary-700 shadow-sm relative hover:scale-105 transition-transform">
-            <Bell size={20} />
-            <span className="absolute top-3 right-3 w-2 h-2 bg-accent-500 rounded-full border-2 border-white"></span>
-          </button>
+            <NotificationBell
+                      notifications={notifications}
+                      unreadCount={unreadCount}
+                      onMarkAsRead={markAsRead}
+                      onMarkAllAsRead={markAllAsRead}
+                    />
           
           {/* BOTÃO DE PERFIL / LOGIN */}
           <button 
@@ -98,8 +106,9 @@ export function TopBar({ activeView, onViewChange, isMenuOpen }: TopBarProps) {
           >
             {user?.photo_url ? (
               <img 
-                src={user.photo_url} 
-                alt={user.display_name}
+                src={user.photo_url.startsWith('http') 
+                  ? user.photo_url 
+                  : `http://localhost:8000${user.photo_url}`}
                 className="w-12 h-12 rounded-2xl border-4 border-white shadow-lg object-cover"
               />
             ) : (

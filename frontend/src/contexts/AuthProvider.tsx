@@ -1,35 +1,36 @@
-import React, { useState, useCallback } from 'react';
-import api from '../services/api';
+import React, { useState } from 'react';
 import { AuthContext, User } from './AuthContext';
+import { api } from '../services/api';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const storageUser = localStorage.getItem('@OrBee:user');
-    const storageToken = localStorage.getItem('@OrBee:token');
-    if (storageUser && storageToken) {
-      api.defaults.headers.Authorization = `Bearer ${storageToken}`;
-      try { return JSON.parse(storageUser); } catch { return null; }
+    const storageUser = localStorage.getItem('user_data');
+    const storageToken = localStorage.getItem('access_token');
+    if (storageToken && storageUser) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${storageToken}`;
+      return JSON.parse(storageUser);
     }
     return null;
   });
 
-const login = useCallback(async (token: string, userData: User) => {
-  api.defaults.headers.Authorization = `Bearer ${token}`;
-  localStorage.setItem('@OrBee:token', token);
-  localStorage.setItem('@OrBee:user', JSON.stringify(userData));
-  setUser(userData);
-}, []);
+  const [loading] = useState(false);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('@OrBee:token');
-    localStorage.removeItem('@OrBee:user');
-    delete api.defaults.headers.Authorization;
+  async function login(token: string, userData: User) {
+    localStorage.setItem('access_token', token);
+    localStorage.setItem('user_data', JSON.stringify(userData));
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    setUser(userData);
+  }
+
+  function logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_data');
+    delete api.defaults.headers.common['Authorization'];
     setUser(null);
-    window.location.href = '/';
-  }, []);
+  }
 
   return (
-    <AuthContext.Provider value={{ signed: !!user, user, login, logout }}>
+    <AuthContext.Provider value={{ signed: !!user, user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
