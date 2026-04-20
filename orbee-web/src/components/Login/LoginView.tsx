@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Mail, Lock, LogIn, ArrowRight, Camera, UserCircle, X, Sparkles } from 'lucide-react';
-import api from '../../services/api';
+import{ api } from '../../services/api';
 import { AxiosError } from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 interface LoginViewProps {
@@ -8,78 +8,85 @@ interface LoginViewProps {
 }
 
 export function LoginView({ onViewChange }: LoginViewProps) {
-  const { login } = useAuth(); // 2. Pegue a função login do contexto
+  const { login } = useAuth(); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [bio, setBio] = useState('');
-  
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setPhotoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => setPhotoPreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
-
-  // --- LOGIN INTEGRADO ---
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-    const response = await api.post('/auth/login', { 
-      email: email, 
-      password: password 
-    });
-    const { access_token, user: userData } = response.data;
-    await login(access_token, userData);
-    onViewChange('Home');
-    } catch (err) {
-      const error = err as AxiosError<{ detail: string }>;
-      console.error("Erro no login:", error);
-    if (error.response) {
-      const errorMessage = error.response?.data?.detail || "E-mail ou senha incorretos.";
-      alert(errorMessage);
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
+  
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('email', email);
-      formData.append('password', password);
-      formData.append('full_name', fullName);
-      formData.append('display_name', displayName);
-      formData.append('phone', phone);
-      formData.append('bio', bio);
-      if (photoFile) formData.append('profile_photo', photoFile);
-
-      await api.post('/auth/register', formData);
-      alert("Conta criada! 🐝 Agora você já pode fazer login.");
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao cadastrar.");
+      await api.post('/auth/register', {
+              email, password,
+              full_name: fullName,
+              display_name: displayName,
+              phone, bio,
+            });
+      
+      const loginRes = await api.post('/auth/login', { email, password });
+      const { access_token, user: userData } = loginRes.data.data;
+      await login(access_token, userData);
+      
+      if (fileInputRef.current?.files?.[0]) {
+        const formData = new FormData();
+        formData.append('file', fileInputRef.current.files[0]);
+        const photoRes = await api.patch('/auth/me/photo', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+              });
+              await login(access_token, { ...userData, photo_url: photoRes.data.photo_url });
+            }
+      
+            setIsModalOpen(false);
+            onViewChange('Home');
+          } catch (error) {
+            console.error(error);
+            alert('Erro ao cadastrar.');
+          } finally {
+            setLoading(false);
+          }
+        };
+  
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await api.post('/auth/login', { 
+        email, 
+        password
+      });
+      
+      const { access_token, user: user } = response.data.data;
+      await login(access_token, user);
+      onViewChange('Home');
+    } catch (err) {
+      const error = err as AxiosError<{ detail: unknown }>;
+      console.error("Erro no login:", error);
+      const errorMessage = error.response?.data?.detail;
+      const message = Array.isArray(errorMessage) 
+      ? errorMessage[0].msg 
+      : errorMessage || "E-mail ou senha incorretos.";
+      alert(message)
     } finally {
-      setLoading(false);
-    }
+    setLoading(false);
   }
+};
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-6 bg-[#A5A3C8] relative overflow-hidden font-sans">
@@ -142,7 +149,6 @@ export function LoginView({ onViewChange }: LoginViewProps) {
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
     <div className="absolute inset-0 bg-[#3A385F]/40 backdrop-blur-md" onClick={() => setIsModalOpen(false)} /> 
     <div className="relative w-full max-w-5xl bg-[#B1AFCE] rounded-[40px] md:rounded-[60px] shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-h-[95vh] h-full scrollbar-thin">
-      {/* Lado Esquerdo */}
       <div className="lg:col-span-4 bg-[#CFF178] p-8 lg:p-12 flex flex-col justify-between relative shrink-0">
         <Sparkles size={140} className="absolute -right-12 -top-12 text-[#3A385F]/5 rotate-12" />
         <div>
@@ -156,7 +162,6 @@ export function LoginView({ onViewChange }: LoginViewProps) {
 
       {/* Lado Direito */}
       <div className="lg:col-span-8 p-8 lg:p-14 overflow-y-auto min-h-0 flex-1 relative flex flex-col bg-[#B1AFCE]">
-        {/* Botão X - Ajustado para ficar fixo no topo do scroll no mobile */}
         <button 
           onClick={() => setIsModalOpen(false)} 
           className="sticky top-0 self-end mb-2 text-[#3A385F]/30 hover:text-[#CFF178] transition-colors z-50 bg-[#B1AFCE]/80 backdrop-blur-sm rounded-full p-1"

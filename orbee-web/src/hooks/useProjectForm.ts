@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import api from '../services/api'; 
+import { api } from '../services/api';
 
 export interface MetaData {
   current_page?: number;
@@ -17,12 +17,13 @@ export interface MetaData {
   author?: string;
   daily_goal?: number;
   meta_type?: string;
-  category?: string;  
-  priority?: string;  
+  category?: string;
+  priority?: string;
   links?: { id: string; url: string }[];
   tasks?: { id: string; text: string; completed: boolean }[];
   ingredients?: string;
   instructions?: string;
+  habit_goal?: number;
 }
 
 export interface Project {
@@ -38,7 +39,6 @@ export function useProjectForm(onSuccess: () => void) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  // --- Estados do Formulário ---
   const [name, setName] = useState('');
   const [type, setType] = useState('projeto');
   const [author, setAuthor] = useState('');
@@ -63,58 +63,45 @@ export function useProjectForm(onSuccess: () => void) {
   const [newTaskText, setNewTaskText] = useState('');
   const [ingredients, setIngredients] = useState('');
   const [instructions, setInstructions] = useState('');
+  const [subject, setSubject] = useState('');
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedProject(null);
     setName('');
     setType('projeto');
+    setAuthor('');
+    setCurrentPage(0);
     setTotalPages(0);
+    setDailyGoal(10);
+    setCurrentValue(0);
     setTargetValue(0);
     setUnit('R$');
+    setMetaType('quantitativa');
+    setHabitGoal(21);
     setNewStartDate('');
     setNewEndDate('');
     setNewDescription('');
     setNewNotes('');
     setNewGoalPurpose('');
-    setHabitGoal(21);
     setPriority('média');
     setCategory('pessoal');
-    setTasks([]);
     setLinks([]);
+    setNewLinkUrl('');
+    setTasks([]);
     setNewTaskText('');
-    setAuthor('');
-    setCurrentPage(0);
-    setDailyGoal(10);
-    setCurrentValue(0);
     setIngredients('');
     setInstructions('');
+    setSubject('');
   }, []);
 
-const handleOpenEdit = useCallback((project: Project) => {
+  const handleOpenEdit = useCallback((project: Project) => {
+    const meta = project.meta_data || {};
+    const lowerType = project.type.toLowerCase();
+
     setSelectedProject(project);
     setName(project.name);
-    setType(project.type.toLowerCase());
-
-    const meta = project.meta_data;
-
-    if (meta) {
-        setCategory(meta.category || 'pessoal');
-        setPriority(meta.priority || 'média');
-        setNewStartDate(meta.start_date || '');
-        setNewEndDate(meta.end_date || '');
-        setNewDescription(meta.insights || project.description || '');
-        setLinks(meta.links || []); 
-        setTasks(meta.tasks || []);
-        setAuthor(meta.author || '');
-        setCurrentPage(meta.current_page || 0);
-        setTotalPages(meta.total_pages || 0);
-        setTargetValue(meta.target_value || 0);
-        setCurrentValue(meta.current_value || 0);
-        setIngredients(meta.ingredients || '');
-        setInstructions(meta.instructions || '');
-    }
-    
+    setType(lowerType);
     setNewStartDate(meta.start_date || '');
     setNewEndDate(meta.end_date || '');
     setNewDescription(meta.insights || project.description || '');
@@ -128,14 +115,14 @@ const handleOpenEdit = useCallback((project: Project) => {
     setTargetValue(meta.target_value || 0);
     setUnit(meta.unit || 'R$');
     setMetaType((meta.meta_type as 'quantitativa' | 'qualitativa') || 'quantitativa');
-    setHabitGoal(meta.target_value || 21);
+    setHabitGoal(meta.habit_goal || meta.target_value || 21);
     setCategory(meta.category || 'pessoal');
     setPriority(meta.priority || 'média');
     setLinks(meta.links || []);
     setTasks(meta.tasks || []);
     setIngredients(meta.ingredients || '');
     setInstructions(meta.instructions || '');
-
+    setSubject(lowerType === 'estudo' ? (meta.category || '') : '');
     setIsModalOpen(true);
   }, []);
 
@@ -149,76 +136,84 @@ const handleOpenEdit = useCallback((project: Project) => {
       insights: newDescription,
       notes: newNotes,
       purpose: newGoalPurpose,
+      author,
+      daily_goal: dailyGoal,
       total_pages: totalPages,
       current_page: currentPage,
-      author: author,
-      daily_goal: dailyGoal,
-      target_value: lowerType === 'habito' ? habitGoal : targetValue,
       current_value: currentValue,
-      unit: lowerType === 'habito' ? 'dias' : unit,
+      target_value: lowerType === 'habito' ? habitGoal : targetValue,
+      unit: lowerType === 'estudo' ? 'horas' : lowerType === 'habito' ? 'dias' : unit,
       meta_type: metaType,
-      streak: selectedProject?.meta_data.streak || 0,
-      last_done: selectedProject?.meta_data.last_done || null,
-      category: category,
-      priority: priority,
-      links: links,
-      tasks: tasks,
-      ingredients: ingredients,
-      instructions: instructions,
+      streak: selectedProject?.meta_data?.streak || 0,
+      last_done: selectedProject?.meta_data?.last_done || null,
+      habit_goal: lowerType === 'habito' ? habitGoal : undefined,
+      category: lowerType === 'estudo' ? subject : category,
+      priority,
+      links,
+      tasks,
+      ingredients,
+      instructions,
     };
 
     const payload = {
       name,
       type: lowerType,
       meta_data,
-      description: lowerType === 'receita' ? instructions.slice(0, 100) : (newDescription || newGoalPurpose || ""),
+      description: newDescription || newGoalPurpose || '',
     };
 
     try {
       if (selectedProject) {
-        await api.put(`/projects/${selectedProject.id}`, payload);
+        await api.patch(`/projects/${selectedProject.id}`, payload);
       } else {
         await api.post('/projects/', payload);
       }
-      onSuccess(); 
+      onSuccess();
       closeModal();
     } catch (error) {
-      console.error("Erro na persistência:", error);
+      console.error('Erro ao salvar projeto:', error);
     }
   };
 
-  // --- Cálculos de Progresso ---
-  const projectProgress = tasks.length > 0 
-    ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) 
+  // Cálculos de progresso
+  const projectProgress = tasks.length > 0
+    ? Math.round((tasks.filter((t) => t.completed).length / tasks.length) * 100)
     : 0;
 
-  const readingProgress = totalPages > 0 
-    ? Math.min(Math.round((currentPage / totalPages) * 100), 100) 
+  const readingProgress = totalPages > 0
+    ? Math.min(Math.round((currentPage / totalPages) * 100), 100)
     : 0;
 
-  const metaProgress = targetValue > 0 
-    ? Math.min(Math.round((currentValue / targetValue) * 100), 100) 
+  const metaProgress = targetValue > 0
+    ? Math.min(Math.round((currentValue / targetValue) * 100), 100)
+    : 0;
+
+  const studyProgress = targetValue > 0
+    ? Math.min(Math.round((currentValue / targetValue) * 100), 100)
     : 0;
 
   return {
     states: {
-      isModalOpen, selectedProject, name, type, author, currentPage,
-      totalPages, dailyGoal, currentValue, targetValue, unit, metaType,
-      habitGoal, newStartDate, newEndDate, newDescription, newNotes,
-      newGoalPurpose, priority, category, links, newLinkUrl, tasks, newTaskText,
-      ingredients, instructions 
+      isModalOpen, selectedProject,
+      name, type, author, currentPage, totalPages, dailyGoal,
+      currentValue, targetValue, unit, metaType, habitGoal,
+      newStartDate, newEndDate, newDescription, newNotes, newGoalPurpose,
+      priority, category, links, newLinkUrl, tasks, newTaskText,
+      ingredients, instructions, subject,
+      studyHours: currentValue,
+      targetHours: targetValue,
     },
-    progress: {
-      projectProgress, readingProgress, metaProgress
-    },
+    progress: { projectProgress, readingProgress, metaProgress, studyProgress },
     actions: {
-      setIsModalOpen, setName, setType, setAuthor, setCurrentPage, setTotalPages,
-      setDailyGoal, setCurrentValue, setTargetValue, setUnit, setMetaType,
-      setHabitGoal, setNewStartDate, setNewEndDate, setNewDescription,
-      setNewNotes, setNewGoalPurpose, setPriority, setCategory, setLinks,
-      setNewLinkUrl, setTasks, setNewTaskText,
-      setIngredients, setInstructions, 
-      closeModal, handleOpenEdit, handleSaveProject
-    }
+      setIsModalOpen, setName, setType, setAuthor,
+      setCurrentPage, setTotalPages, setDailyGoal,
+      setCurrentValue, setTargetValue, setUnit, setMetaType, setHabitGoal,
+      setNewStartDate, setNewEndDate, setNewDescription, setNewNotes, setNewGoalPurpose,
+      setPriority, setCategory, setLinks, setNewLinkUrl, setTasks, setNewTaskText,
+      setIngredients, setInstructions, setSubject,
+      setStudyHours: setCurrentValue,
+      setTargetHours: setTargetValue,
+      closeModal, handleOpenEdit, handleSaveProject,
+    },
   };
 }
