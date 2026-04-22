@@ -14,21 +14,9 @@ import { ProjectsView } from '../components/views/ProjectView';
 import { RecipesView } from '../components/views/RecipesView';
 import { SettingsView } from '../components/views/SettingsView';
 import { LoginView } from '../components/Login/LoginView';
-
-// Hooks & Types
 import { ViewType } from '../types/View';
 import { useAuth } from '../hooks/useAuth';
-
-// Interface Task sincronizada com HomeView (incluindo priority)
-interface Task {
-  id: number;
-  title: string;
-  date: string;
-  time: string;
-  category: string;
-  completed: boolean;
-  priority: 'low' | 'medium' | 'high';
-}
+import { Task } from '../types/Tasks';
 
 export default function MainLayout() {
   const logoAbelha = new URL('../assets/Logoorbee.png', import.meta.url).href;
@@ -105,7 +93,7 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-[#A5A3C8] overflow-hidden font-sans relative">
+    <div className="flex h-screen w-full bg-transparent style={{ zIndex: 2 }} overflow-hidden font-sans relative">
       
       {/* 1. BOTÃO HAMBÚRGUER (MOBILE) */}
       {!isMenuOpen && (

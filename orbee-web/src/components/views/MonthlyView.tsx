@@ -1,15 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { api } from "../../services/api";
-import {
-  Target, 
-  Calendar as CalendarIcon,
-  ChevronRight,
-  Zap,
-  Clock,
-  Sparkles,
-  X,
-  ArrowRight
-} from 'lucide-react';
+import { Target, Calendar as CalendarIcon, ChevronRight, Zap, Clock, Sparkles, X, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 type Insight = {

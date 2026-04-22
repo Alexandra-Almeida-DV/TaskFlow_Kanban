@@ -22,20 +22,10 @@ import {
   useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-
-interface Task {
-  id: number;
-  title: string;
-  date: string;
-  time: string;
-  category: string;
-  completed: boolean;
-}
-
+import { Task } from '../../types/Tasks';
 interface WeeklyViewProps {
   tasks: Task[];
 }
-
 interface DayColumnProps {
   id: string;
   dayName: string;
@@ -43,7 +33,6 @@ interface DayColumnProps {
   isToday: boolean;
   children: React.ReactNode;
 }
-
 interface SortableTaskCardProps {
   task: Task;
   colorClass: string;

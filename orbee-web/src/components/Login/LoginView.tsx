@@ -89,8 +89,8 @@ export function LoginView({ onViewChange }: LoginViewProps) {
 };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-[#A5A3C8] relative overflow-hidden font-sans">
-      <div className="w-full max-w-4xl bg-white/20 backdrop-blur-xl border border-white/30 p-12 md:p-20 rounded-[60px] shadow-2xl relative z-10 transition-all">
+    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-transparent relative overflow-hidden font-sans">
+      <div className="w-full max-w-4xl bg-white/20 backdrop-blur- border border-white/30 p-12 md:p-20 rounded-[60px] shadow-2xl relative z-10 transition-all">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div className="space-y-6">
             <div className="bg-[#CFF178] w-20 h-20 rounded-[30px] flex items-center justify-center shadow-lg shadow-[#CFF178]/20">
