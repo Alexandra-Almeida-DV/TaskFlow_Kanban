@@ -72,7 +72,7 @@ export function DailyView({ date, tasks, setTasks }: DailyViewProps) {
             className="w-full md:w-auto bg-[#cff178] hover:bg-[#bde85d] text-[#5D5A88] px-8 py-4 md:px-10 md:py-5 rounded-2xl md:rounded-[25px] font-black flex items-center justify-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#cff178]/10"
           >
             <Plus className="w-5 h-5 md:w-6 md:h-6" strokeWidth={3} />
-            <span className="text-xs md:text-sm uppercase tracking-wider">Nova Task</span>
+            <span className="text-xs md:text-sm uppercase tracking-wider">Nova Tarefa</span>
           </button>
         </header>
 
@@ -153,10 +153,10 @@ export function DailyView({ date, tasks, setTasks }: DailyViewProps) {
                     onChange={e => setNewTask({ ...newTask, title: e.target.value })}
                   />
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <input
                     type="time"
+                    required
                     className="w-full px-6 md:px-8 py-4 md:py-5 rounded-xl md:rounded-[25px] bg-[#5D5A88]/5 border-2 border-transparent focus:border-[#cff178] text-[#5D5A88] font-bold outline-none"
                     value={newTask.time}
                     onChange={e => setNewTask({ ...newTask, time: e.target.value })}

@@ -8,3 +8,14 @@ html, body, #root {
   padding: 0;
   background-color: #A5A3C8;;
 }
+
+input[type="time"]:not(:focus):invalid::-webkit-datetime-edit {
+    color: transparent;
+}
+
+input[type="time"]:not(:focus):invalid::before {
+    content: "--:--";
+    color: #8A88B6; /* Cor cinza/roxa suave que você já usa */
+    margin-right: 0.5em;
+    font-weight: bold;
+}

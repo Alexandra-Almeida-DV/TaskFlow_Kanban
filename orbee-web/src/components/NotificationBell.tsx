@@ -61,7 +61,7 @@ export function NotificationBell({
 
       {/* DROPDOWN */}
       {open && (
-        <div className="absolute right-0 top-14 w-80 bg-white/95 backdrop-blur-xl rounded-[24px] shadow-2xl border border-white/60 z-[200] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 top-14 w-60 bg-white/95 backdrop-blur-xl rounded-[24px] shadow-2xl border border-white/60 z-[200] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
 
           {/* HEADER */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">

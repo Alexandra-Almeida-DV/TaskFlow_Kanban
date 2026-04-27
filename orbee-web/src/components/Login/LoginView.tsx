@@ -146,9 +146,9 @@ export function LoginView({ onViewChange }: LoginViewProps) {
       </div>
 
       {isModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-8 animate-in fade-in duration-300">
     <div className="absolute inset-0 bg-[#3A385F]/40 backdrop-blur-md" onClick={() => setIsModalOpen(false)} /> 
-    <div className="relative w-full max-w-5xl bg-[#B1AFCE] rounded-[40px] md:rounded-[60px] shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-h-[95vh] h-full scrollbar-thin">
+    <div className="relative top-10 w-full max-w-5xl bg-[#B1AFCE] rounded-[40px] md:rounded-[60px] shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-h-[95vh] h-full scrollbar-thin">
       <div className="lg:col-span-4 bg-[#CFF178] p-8 lg:p-12 flex flex-col justify-between relative shrink-0">
         <Sparkles size={140} className="absolute -right-12 -top-12 text-[#3A385F]/5 rotate-12" />
         <div>
