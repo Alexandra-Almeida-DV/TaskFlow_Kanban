@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Clock, CheckCircle2, Circle, LayoutDashboard } from 'lucide-react';
@@ -25,6 +25,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Task } from '../../types/Tasks';
 interface WeeklyViewProps {
   tasks: Task[];
+  setTasks: Dispatch<SetStateAction<Task[]>>;
 }
 interface DayColumnProps {
   id: string;
