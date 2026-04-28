@@ -1,12 +1,3 @@
-<div align="center">
-
-<img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/ativos/Logoorbee.png" alt="Orbee Logo" width="180px" />
-
-<br/>
-<br/>
-
-<img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/ativos/home.png" alt="Orbee Dashboard" width="100%" />
-
 # 🐝 Orbee — Productivity Ecosystem
 
 **Orbit. Organize. Produce.**
@@ -42,14 +33,13 @@ Não é só um gerenciador de tarefas. É o centro da sua órbita.
 
 | Home | Cadastro | Notas |
 |---|---|---|
-| <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/ativos/home.png" width="250"/> | <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/ativos/cadastroOrBee.png" width="250"/> | <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/ativos/notas.png" width="250"/> |
+| <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/assets/home.png" width="250"/> | <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/assets/cadastroOrBee.png" width="250"/> | <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/assets/notas.png" width="250"/> |
 
 | Receitas | Insights | Mobile |
 |---|---|---|
-| <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/ativos/receitas.png" width="250"/> | <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/ativos/insightMensal.png" width="250"/> | <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/ativos/celular.png" width="250"/> |
+| <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/assets/receitas.png" width="250"/> | <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/assets/insightMensal.png" width="250"/> | <img src="https://raw.githubusercontent.com/Alexandra-Almeida-DV/OrBee/main/orbee-web/src/assets/celular.png" width="250"/> |
 
 </div>
-
 ---
 
 ## 🚀 Funcionalidades
